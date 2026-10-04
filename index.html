@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CRM المندوبين</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#172033;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial}
+.top{background:#142b4d;color:white;padding:18px 22px;font-size:21px;font-weight:700}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:#fff;width:min(420px,100%);padding:28px;border-radius:18px;box-shadow:0 8px 35px #0002}
+label{display:block;margin:14px 0 6px;font-size:14px}input,select{width:100%;padding:13px;border:1px solid #d5dae3;border-radius:10px;font-size:16px;background:#fff}
+.btn{width:100%;border:0;border-radius:10px;padding:13px;margin-top:14px;background:#2563eb;color:#fff;font-size:16px;font-weight:700}
+.demo{background:#f1f5f9;padding:12px;border-radius:10px;margin-top:15px;font-size:13px;line-height:1.8}
+.err{color:#b42318;background:#fef3f2;padding:10px;border-radius:8px;margin-top:12px;display:none}
+.app{display:none}.layout{display:flex;min-height:calc(100vh - 62px)}.side{width:235px;background:#fff;border-left:1px solid #e6e9ef;padding:15px}.side button{width:100%;border:0;background:#f3f5f8;padding:12px;margin:5px 0;border-radius:9px;text-align:right;font-size:14px}.side button:hover{background:#142b4d;color:white}
+.main{padding:22px;flex:1}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}.card,.panel{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 12px #0000000d;margin-bottom:15px}.num{font-size:25px;font-weight:800;margin-top:7px}.muted{color:#667085;font-size:13px}
+table{width:100%;border-collapse:collapse}th,td{padding:11px;border-bottom:1px solid #eee;text-align:right;font-size:14px}.badge{display:inline-block;padding:5px 9px;border-radius:20px;background:#eaf0ff;color:#2547a8}
+.progress{height:9px;background:#e8ecf2;border-radius:20px;overflow:hidden}.bar{height:100%;background:#2563eb}
+@media(max-width:700px){.side{width:100px}.side button{font-size:11px}.main{padding:13px}.top{font-size:18px}}
+</style>
+</head>
+<body>
+
+<section id="login" class="login">
+<div class="box">
+<h1 style="margin:0 0 5px">CRM المندوبين</h1>
+<div style="color:#667085;font-size:13px">نسخة ويب تجريبية</div>
+<label>نوع الحساب</label>
+<select id="role"><option value="admin">الإدارة</option><option value="rep">المندوب</option></select>
+<label>اسم المستخدم</label>
+<input id="username" autocomplete="username" value="admin">
+<label>كلمة المرور</label>
+<input id="password" type="password" autocomplete="current-password" value="1234">
+<button class="btn" id="loginBtn">دخول</button>
+<div id="error" class="err">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+<div class="demo">للتجربة:<br>الإدارة: <b>admin</b> / <b>1234</b><br>المندوب: <b>rep1</b> / <b>1234</b></div>
+</div>
+</section>
+
+<section id="app" class="app">
+<div class="top">CRM | إدارة المندوبين <span id="userLabel" style="float:left;font-size:13px;font-weight:400"></span></div>
+<div class="layout"><aside id="side" class="side"></aside><main id="main" class="main"></main></div>
+</section>
+
+<script>
+"use strict";
+const DB={
+reps:[{name:"أحمد علي",area:"بغداد",target:10000000,sales:7250000},{name:"محمد قاسم",area:"بابل",target:12000000,sales:9600000},{name:"حسين كريم",area:"النجف",target:9000000,sales:5400000}],
+materials:[{name:"Amoxicillin 500mg",target:1000,sold:780,price:8500},{name:"Vitamin C",target:1500,sold:1120,price:5000},{name:"Paracetamol",target:2000,sold:1680,price:3000}],
+orders:[{id:1001,rep:"أحمد علي",pharmacy:"صيدلية الشفاء",warehouse:"مذخر الحياة",total:385000,status:"قيد المراجعة"},{id:1002,rep:"محمد قاسم",pharmacy:"صيدلية الرافدين",warehouse:"مذخر النور",total:620000,status:"موافق عليه"}],
+provinces:["بغداد","بابل","النجف","كربلاء","الديوانية"]
+};
+let currentRole="";
+const $=id=>document.getElementById(id);
+function clean(v){return String(v||"").trim().toLowerCase();}
+function login(){
+ const role=$("role").value, u=clean($("username").value), p=String($("password").value||"").trim();
+ const ok=(role==="admin"&&u==="admin"&&p==="1234")||(role==="rep"&&u==="rep1"&&p==="1234");
+ if(!ok){$("error").style.display="block";return;}
+ $("error").style.display="none";currentRole=role;$("login").style.display="none";$("app").style.display="block";
+ $("userLabel").textContent=role==="admin"?"الإدارة":"المندوب: أحمد علي";nav();show(role==="admin"?"dashboard":"rep");
+}
+$("loginBtn").addEventListener("click",login);
+$("password").addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+function nav(){
+ const arr=currentRole==="admin"?[
+ ["dashboard","لوحة الإدارة"],["provinces","المحافظات"],["orders","الطلبات"],["materials","المواد"],["reports","التقارير"],["attendance","الحضور والانصراف"]
+ ]:[
+ ["rep","لوحتي"],["new","رفع طلب"],["myorders","طلباتي"],["myreports","تقاريري"],["attendance","الحضور والانصراف"]
+ ];
+ $("side").innerHTML=arr.map(x=>`<button onclick="show('${x[0]}')">${x[1]}</button>`).join("")+
+ `<button onclick="location.reload()" style="background:#fff1f2;color:#b42318">تسجيل خروج</button>`;
+}
+function pct(a,b){return b?Math.min(100,Math.round(a/b*100)):0}
+function show(x){
+ const m=$("main");
+ if(x==="dashboard")m.innerHTML=admin();
+ if(x==="provinces")m.innerHTML=provinces();
+ if(x==="orders")m.innerHTML=orders();
+ if(x==="materials")m.innerHTML=materials();
+ if(x==="reports")m.innerHTML=reports();
+ if(x==="attendance")m.innerHTML=attendance();
+ if(x==="rep")m.innerHTML=rep();
+ if(x==="new")m.innerHTML=newOrder();
+ if(x==="myorders")m.innerHTML=myorders();
+ if(x==="myreports")m.innerHTML=myreports();
+}
+function admin(){return `<h2>لوحة الإدارة</h2><div class="cards"><div class="card"><div class="muted">إجمالي المبيعات</div><div class="num">22,250,000</div></div><div class="card"><div class="muted">المندوبون</div><div class="num">3</div></div><div class="card"><div class="muted">الطلبات</div><div class="num">${DB.orders.length}</div></div><div class="card"><div class="muted">المحافظات</div><div class="num">5</div></div></div><div class="panel"><h3>المندوبون</h3><table><tr><th>المندوب</th><th>المحافظة</th><th>المبيعات</th><th>التارگت</th><th>الإنجاز</th></tr>${DB.reps.map(r=>`<tr><td>${r.name}</td><td>${r.area}</td><td>${r.sales.toLocaleString()}</td><td>${r.target.toLocaleString()}</td><td>${pct(r.sales,r.target)}%</td></tr>`).join("")}</table></div>`}
+function provinces(){return `<h2>المحافظات</h2><div class="cards">${DB.provinces.map(p=>`<div class="card"><b>${p}</b><p class="muted">${DB.reps.filter(r=>r.area===p).length} مندوب</p></div>`).join("")}</div>`}
+function orders(){return `<h2>الطلبات</h2><div class="panel"><table><tr><th>الطلب</th><th>المندوب</th><th>الصيدلية</th><th>المذخر</th><th>القيمة</th><th>الحالة</th><th></th></tr>${DB.orders.map(o=>`<tr><td>#${o.id}</td><td>${o.rep}</td><td>${o.pharmacy}</td><td>${o.warehouse}</td><td>${o.total.toLocaleString()}</td><td><span class="badge">${o.status}</span></td><td><button onclick="approve(${o.id})">موافقة</button></td></tr>`).join("")}</table></div>`}
+function approve(id){const o=DB.orders.find(x=>x.id===id);if(o)o.status="موافق عليه";show("orders")}
+function materials(){return `<h2>المواد</h2><div class="panel"><table><tr><th>المادة</th><th>السعر</th><th>التارگت</th><th>المباع</th><th>النسبة</th></tr>${DB.materials.map(m=>`<tr><td>${m.name}</td><td>${m.price.toLocaleString()}</td><td>${m.target}</td><td>${m.sold}</td><td>${pct(m.sold,m.target)}%</td></tr>`).join("")}</table></div>`}
+function reports(){return `<h2>التقارير</h2><div class="cards"><div class="card"><h3>مبيعات المندوبين</h3><p class="muted">تفصيل حسب المحافظة والفترة والمندوب.</p></div><div class="card"><h3>مبيعات المواد</h3><p class="muted">الكميات والقيمة ونسبة التارگت.</p></div><div class="card"><h3>تقارير المندوبين</h3><p class="muted">التقارير المرفوعة للإدارة.</p></div></div>`}
+function attendance(){return `<h2>الحضور والانصراف</h2><div class="panel"><table><tr><th>التاريخ</th><th>المندوب</th><th>الحضور</th><th>الانصراف</th><th>الحالة</th></tr><tr><td>04/10/2026</td><td>أحمد علي</td><td>08:03</td><td>16:12</td><td><span class="badge">حاضر</span></td></tr></table></div>`}
+function rep(){const r=DB.reps[0];return `<h2>لوحة المندوب — ${r.name}</h2><div class="cards"><div class="card"><div class="muted">التارگت</div><div class="num">${r.target.toLocaleString()}</div></div><div class="card"><div class="muted">المبيعات</div><div class="num">${r.sales.toLocaleString()}</div></div><div class="card"><div class="muted">الإنجاز</div><div class="num">${pct(r.sales,r.target)}%</div></div><div class="card"><div class="muted">المتبقي</div><div class="num">${(r.target-r.sales).toLocaleString()}</div></div></div><div class="panel"><h3>تارگت المواد</h3>${DB.materials.map(m=>`<p><b>${m.name}</b> — ${m.sold}/${m.target} (${pct(m.sold,m.target)}%)</p><div class="progress"><div class="bar" style="width:${pct(m.sold,m.target)}%"></div></div>`).join("")}</div>`}
+function newOrder(){return `<h2>رفع طلب</h2><div class="panel"><label>الصيدلية</label><select><option>صيدلية الشفاء</option><option>صيدلية الرافدين</option></select><label>المذخر</label><select><option>مذخر الحياة</option><option>مذخر النور</option></select><label>المادة</label><select>${DB.materials.map(m=>`<option>${m.name}</option>`).join("")}</select><label>الكمية</label><input type="number" value="1"><button class="btn" onclick="alert('تم إرسال الطلب للإدارة')">إرسال الطلب</button></div>`}
+function myorders(){return `<h2>طلباتي</h2><div class="panel"><table><tr><th>الطلب</th><th>الصيدلية</th><th>القيمة</th><th>الحالة</th></tr>${DB.orders.filter(o=>o.rep==="أحمد علي").map(o=>`<tr><td>#${o.id}</td><td>${o.pharmacy}</td><td>${o.total.toLocaleString()}</td><td>${o.status}</td></tr>`).join("")}</table></div>`}
+function myreports(){return `<h2>تقاريري</h2><div class="panel"><label>عنوان التقرير</label><input placeholder="تقرير الزيارات"><label>الملاحظات</label><input placeholder="اكتب التقرير هنا"><button class="btn" onclick="alert('تم رفع التقرير')">رفع التقرير</button></div>`}
+</script>
+</body>
+</html>
